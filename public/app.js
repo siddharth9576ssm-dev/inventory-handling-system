@@ -9,6 +9,7 @@ const loginTab = document.getElementById("loginTab");
 const signupTab = document.getElementById("signupTab");
 const authSubmit = document.getElementById("authSubmit");
 const authMessage = document.getElementById("authMessage");
+const verifyPanel = document.getElementById("verifyPanel");
 const signupFields = document.querySelectorAll(".signup-only");
 const userName = document.getElementById("userName");
 const productForm = document.getElementById("productForm");
@@ -29,6 +30,8 @@ document.getElementById("resetProductButton").addEventListener("click", resetPro
 document.getElementById("logoutButton").addEventListener("click", logout);
 document.getElementById("deleteAccountButton").addEventListener("click", deleteAccount);
 document.getElementById("refreshButton").addEventListener("click", loadAppData);
+document.getElementById("verifyCodeButton").addEventListener("click", verifyEmailCode);
+document.getElementById("resendCodeButton").addEventListener("click", resendVerificationCode);
 searchInput.addEventListener("input", loadProducts);
 categoryFilter.addEventListener("change", loadProducts);
 statusFilter.addEventListener("change", loadProducts);
@@ -52,6 +55,7 @@ function setAuthMode(mode) {
     loginTab.classList.toggle("active", mode === "login");
     signupTab.classList.toggle("active", mode === "signup");
     signupFields.forEach((field) => field.classList.toggle("hidden", mode !== "signup"));
+    verifyPanel.classList.add("hidden");
     authSubmit.textContent = mode === "login" ? "Login" : "Create Account";
     authMessage.textContent = "";
 }
@@ -83,7 +87,9 @@ async function handleAuthSubmit(event) {
         if (authMode === "signup") {
             authForm.reset();
             setAuthMode("login");
-            showMessage(data.message || "Account created. Please check your email to verify your account.");
+            document.getElementById("emailInput").value = email;
+            verifyPanel.classList.remove("hidden");
+            showMessage(data.message || "Account created. Enter the 4-digit code sent to your email.");
             return;
         }
 
@@ -92,6 +98,50 @@ async function handleAuthSubmit(event) {
         showApp(data.user);
         await loadAppData();
         authForm.reset();
+    } catch (error) {
+        if (error.message.toLowerCase().includes("verify your email")) {
+            verifyPanel.classList.remove("hidden");
+        }
+        showMessage(error.message);
+    }
+}
+
+async function verifyEmailCode() {
+    const email = document.getElementById("emailInput").value.trim();
+    const code = document.getElementById("verificationCodeInput").value.trim();
+
+    if (!email || !/^\d{4}$/.test(code)) {
+        showMessage("Enter your email and the 4-digit code.");
+        return;
+    }
+
+    try {
+        const data = await request("/api/auth/verify-email", {
+            method: "POST",
+            body: { email, code }
+        });
+        verifyPanel.classList.add("hidden");
+        document.getElementById("verificationCodeInput").value = "";
+        showMessage(data.message || "Email verified. You can now login.");
+    } catch (error) {
+        showMessage(error.message);
+    }
+}
+
+async function resendVerificationCode() {
+    const email = document.getElementById("emailInput").value.trim();
+
+    if (!email) {
+        showMessage("Enter your email first.");
+        return;
+    }
+
+    try {
+        const data = await request("/api/auth/resend-verification", {
+            method: "POST",
+            body: { email }
+        });
+        showMessage(data.message || "Verification code sent again.");
     } catch (error) {
         showMessage(error.message);
     }

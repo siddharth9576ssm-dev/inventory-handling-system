@@ -7,7 +7,7 @@ A modern inventory management system built with HTML, CSS, JavaScript, Node.js, 
 - Signup, login, logout
 - JWT protected API routes
 - Password hashing with bcrypt
-- Email verification before login
+- 4-digit email verification before login
 - Add, edit, delete, search, and filter products
 - Dashboard cards for total products, total stock, low stock, and total value
 - Recent product activity
@@ -103,7 +103,7 @@ http://localhost:3000
 ```text
 POST   /api/auth/signup
 POST   /api/auth/login
-GET    /api/auth/verify-email/:token
+POST   /api/auth/verify-email
 POST   /api/auth/resend-verification
 GET    /api/auth/me
 GET    /api/products/dashboard

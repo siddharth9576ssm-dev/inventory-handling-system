@@ -41,6 +41,16 @@
 
                 <button class="primary-button" id="authSubmit" type="submit">Login</button>
                 <p class="form-message" id="authMessage"></p>
+
+                <div class="verify-panel hidden" id="verifyPanel">
+                    <div class="form-field">
+                        <label for="verificationCodeInput">4-digit verification code</label>
+                        <input id="verificationCodeInput" type="text" inputmode="numeric" maxlength="4"
+                            placeholder="1234">
+                    </div>
+                    <button class="primary-button" type="button" id="verifyCodeButton">Verify Code</button>
+                    <button class="ghost-button" type="button" id="resendCodeButton">Resend Code</button>
+                </div>
             </form>
         </section>
     </main>

@@ -1,4 +1,3 @@
-const crypto = require("crypto");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const generateToken = require("../utils/generateToken");
@@ -24,19 +23,19 @@ async function signup(req, res, next) {
             throw new Error("This email is already registered");
         }
 
-        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const verificationCode = createVerificationCode();
         const user = await User.create({
             name,
             email,
             password,
-            emailVerificationToken: verificationToken,
-            emailVerificationExpires: Date.now() + 1000 * 60 * 60
+            emailVerificationCode: verificationCode,
+            emailVerificationExpires: Date.now() + 1000 * 60 * 10
         });
 
-        await sendVerificationEmail(req, user, verificationToken);
+        await sendVerificationEmail(user, verificationCode);
 
         res.status(201).json({
-            message: "Account created. Please verify your email before login."
+            message: "Account created. Enter the 4-digit code sent to your email."
         });
     } catch (error) {
         next(error);
@@ -62,7 +61,7 @@ async function login(req, res, next) {
 
         if (!user.isEmailVerified) {
             res.status(403);
-            throw new Error("Please verify your email before login");
+            throw new Error("Please verify your email with the 4-digit code before login");
         }
 
         res.json({
@@ -89,30 +88,33 @@ async function getMe(req, res) {
     });
 }
 
-async function verifyEmail(req, res, next) {
+async function verifyEmailCode(req, res, next) {
     try {
+        const email = String(req.body.email || "").trim().toLowerCase();
+        const code = String(req.body.code || "").trim();
+
+        if (!email || !/^\d{4}$/.test(code)) {
+            res.status(400);
+            throw new Error("Email and 4-digit code are required");
+        }
+
         const user = await User.findOne({
-            emailVerificationToken: req.params.token,
+            email,
+            emailVerificationCode: code,
             emailVerificationExpires: { $gt: Date.now() }
         });
 
         if (!user) {
             res.status(400);
-            throw new Error("Verification link is invalid or expired");
+            throw new Error("Verification code is invalid or expired");
         }
 
         user.isEmailVerified = true;
-        user.emailVerificationToken = "";
+        user.emailVerificationCode = "";
         user.emailVerificationExpires = null;
         await user.save();
 
-        res.send(`
-            <main style="font-family: Arial, sans-serif; max-width: 560px; margin: 80px auto; line-height: 1.6;">
-                <h1>Email verified</h1>
-                <p>Your account is verified. You can now log in to Inventory Handling System.</p>
-                <a href="/" style="display:inline-block;background:#1769e0;color:white;padding:12px 16px;border-radius:8px;text-decoration:none;">Open app</a>
-            </main>
-        `);
+        res.json({ message: "Email verified. You can now login." });
     } catch (error) {
         next(error);
     }
@@ -138,13 +140,13 @@ async function resendVerification(req, res, next) {
             return;
         }
 
-        const verificationToken = crypto.randomBytes(32).toString("hex");
-        user.emailVerificationToken = verificationToken;
-        user.emailVerificationExpires = Date.now() + 1000 * 60 * 60;
+        const verificationCode = createVerificationCode();
+        user.emailVerificationCode = verificationCode;
+        user.emailVerificationExpires = Date.now() + 1000 * 60 * 10;
         await user.save();
 
-        await sendVerificationEmail(req, user, verificationToken);
-        res.json({ message: "Verification email sent again" });
+        await sendVerificationEmail(user, verificationCode);
+        res.json({ message: "A new 4-digit verification code was sent." });
     } catch (error) {
         next(error);
     }
@@ -161,22 +163,22 @@ async function deleteAccount(req, res, next) {
     }
 }
 
-async function sendVerificationEmail(req, user, token) {
-    const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
-    const verifyUrl = `${baseUrl}/api/auth/verify-email/${token}`;
-
+async function sendVerificationEmail(user, code) {
     await sendEmail({
         to: user.email,
-        subject: "Verify your Inventory Handling System account",
+        subject: "Your Inventory Handling System verification code",
         html: `
             <h2>Verify your email</h2>
             <p>Hello ${user.name},</p>
-            <p>Click the button below to verify your account. This link expires in 1 hour.</p>
-            <p><a href="${verifyUrl}" style="background:#1769e0;color:#fff;padding:12px 16px;border-radius:8px;text-decoration:none;">Verify Email</a></p>
-            <p>If the button does not work, open this link:</p>
-            <p>${verifyUrl}</p>
+            <p>Your 4-digit verification code is:</p>
+            <p style="font-size:32px;font-weight:800;letter-spacing:6px;">${code}</p>
+            <p>This code expires in 10 minutes.</p>
         `
     });
 }
 
-module.exports = { signup, login, getMe, verifyEmail, resendVerification, deleteAccount };
+function createVerificationCode() {
+    return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+module.exports = { signup, login, getMe, verifyEmailCode, resendVerification, deleteAccount };
