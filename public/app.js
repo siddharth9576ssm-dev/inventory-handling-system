@@ -35,12 +35,17 @@ document.getElementById("deleteAccountButton").addEventListener("click", deleteA
 document.getElementById("refreshButton").addEventListener("click", loadAppData);
 document.getElementById("verifyCodeButton").addEventListener("click", verifyEmailCode);
 document.getElementById("resendCodeButton").addEventListener("click", resendVerificationCode);
+document.getElementById("googleAuthButton").addEventListener("click", startGoogleAuth);
 searchInput.addEventListener("input", loadProducts);
 categoryFilter.addEventListener("change", loadProducts);
 statusFilter.addEventListener("change", loadProducts);
 
 function initApp() {
     applySavedTheme();
+
+    if (handleGoogleRedirect()) {
+        return;
+    }
 
     const token = getToken();
     const user = getStoredUser();
@@ -53,6 +58,31 @@ function initApp() {
 
     setAuthMode("login");
     showAuth();
+}
+
+function handleGoogleRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userValue = params.get("user");
+
+    if (!token || !userValue) return false;
+
+    try {
+        const user = JSON.parse(atob(userValue.replace(/-/g, "+").replace(/_/g, "/")));
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showApp(user);
+        loadAppData();
+        return true;
+    } catch (error) {
+        showMessage("Google login failed. Please try again.");
+        return false;
+    }
+}
+
+function startGoogleAuth() {
+    window.location.href = `${API_URL}/api/auth/google`;
 }
 
 function applySavedTheme() {

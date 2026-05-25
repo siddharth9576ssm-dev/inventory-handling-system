@@ -5,6 +5,7 @@ A modern inventory management system built with HTML, CSS, JavaScript, Node.js, 
 ## Features
 
 - Signup, login, logout
+- Google signup and login
 - JWT protected API routes
 - Password hashing with bcrypt
 - 4-digit email verification before login
@@ -75,6 +76,9 @@ SMTP_SECURE=false
 SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_gmail_app_password
 EMAIL_FROM=Inventory Handling System <your_email@gmail.com>
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
 ```
 
 5. Start the server:
@@ -103,6 +107,8 @@ http://localhost:3000
 ```text
 POST   /api/auth/signup
 POST   /api/auth/login
+GET    /api/auth/google
+GET    /api/auth/google/callback
 POST   /api/auth/verify-email
 POST   /api/auth/resend-verification
 GET    /api/auth/me
@@ -151,7 +157,30 @@ SMTP_SECURE
 SMTP_USER
 SMTP_PASS
 EMAIL_FROM
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+GOOGLE_CALLBACK_URL
 ```
+
+## Google OAuth Setup
+
+1. Open Google Cloud Console.
+2. Create a project.
+3. Go to APIs & Services > Credentials.
+4. Create an OAuth Client ID for a Web application.
+5. Add authorized redirect URI:
+
+```text
+http://localhost:3000/api/auth/google/callback
+```
+
+For Render, also add:
+
+```text
+https://inventory-handling-system.onrender.com/api/auth/google/callback
+```
+
+6. Copy the Client ID and Client Secret into `.env` or Render environment variables.
 
 ### Vercel
 

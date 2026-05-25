@@ -207,6 +207,21 @@ select:focus {
     font-weight: 800;
 }
 
+.google-button {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-weight: 800;
+}
+
+.google-button:hover {
+    background: var(--surface-strong);
+}
+
 .primary-button:hover {
     background: var(--primary-dark);
 }

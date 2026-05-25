@@ -17,8 +17,19 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: [true, "Password is required"],
+            required: function passwordRequired() {
+                return !this.googleId;
+            },
             minlength: 6
+        },
+        googleId: {
+            type: String,
+            default: ""
+        },
+        authProvider: {
+            type: String,
+            enum: ["local", "google"],
+            default: "local"
         },
         isEmailVerified: {
             type: Boolean,
@@ -37,7 +48,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function hashPassword(next) {
-    if (!this.isModified("password")) return next();
+    if (!this.password || !this.isModified("password")) return next();
 
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

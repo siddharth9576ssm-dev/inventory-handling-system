@@ -52,6 +52,12 @@ async function login(req, res, next) {
         }
 
         const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (user && user.authProvider === "google" && !user.password) {
+            res.status(400);
+            throw new Error("Please continue with Google for this account");
+        }
+
         const passwordMatches = user ? await user.matchPassword(password) : false;
 
         if (!user || !passwordMatches) {
@@ -163,6 +169,21 @@ async function deleteAccount(req, res, next) {
     }
 }
 
+function googleCallback(req, res) {
+    const token = generateToken(req.user._id);
+    const user = {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email
+    };
+    const appUrl = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
+    const redirectUrl = new URL("/", appUrl);
+
+    redirectUrl.searchParams.set("token", token);
+    redirectUrl.searchParams.set("user", Buffer.from(JSON.stringify(user)).toString("base64url"));
+    res.redirect(redirectUrl.toString());
+}
+
 async function sendVerificationEmail(user, code) {
     await sendEmail({
         to: user.email,
@@ -181,4 +202,4 @@ function createVerificationCode() {
     return String(Math.floor(1000 + Math.random() * 9000));
 }
 
-module.exports = { signup, login, getMe, verifyEmailCode, resendVerification, deleteAccount };
+module.exports = { signup, login, getMe, verifyEmailCode, resendVerification, deleteAccount, googleCallback };
