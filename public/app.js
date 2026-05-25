@@ -223,14 +223,14 @@ async function loginUser() {
     try {
         const user = await callBackend("/api/login", "POST", { email, pass });
         setCurrentUser(user);
-        products = loadProducts();
+        products = await loadProducts();
         showDashboard();
     } catch (error) {
         if (isBackendUnavailable(error)) {
             try {
                 const user = authenticateLocalUser(email, pass);
                 setCurrentUser(user);
-                products = loadProducts();
+                products = await loadProducts();
                 showDashboard();
                 return;
             } catch (localError) {
@@ -521,10 +521,31 @@ function isValidMobile(value) {
 }
 
 /* ---------------- INVENTORY ---------------- */
-// Load saved products from localStorage when the page starts.
-function loadProducts() {
+// Load saved products for the current user from the server, with browser storage as offline fallback.
+async function loadProducts() {
     if (!currentUserEmail) return [];
 
+    try {
+        const response = await callBackend(`/api/products?email=${encodeURIComponent(currentUserEmail)}`);
+        const serverProducts = Array.isArray(response.products) ? response.products : [];
+
+        if (serverProducts.length === 0) {
+            const localProducts = loadProductsFromBrowser();
+            if (localProducts.length > 0) {
+                products = localProducts;
+                await saveProducts();
+                return localProducts;
+            }
+        }
+
+        localStorage.setItem(getProductsStorageKey(), JSON.stringify(serverProducts));
+        return serverProducts;
+    } catch (error) {
+        return loadProductsFromBrowser();
+    }
+}
+
+function loadProductsFromBrowser() {
     const savedProducts = readJsonFromStorage(getProductsStorageKey(), []);
     const productsArray = Array.isArray(savedProducts) ? savedProducts : [];
 
@@ -543,11 +564,17 @@ function loadProducts() {
     return migratedProducts;
 }
 
-// Save the latest product list so it remains after refreshing the browser.
-function saveProducts() {
+// Save the latest product list on the server so it remains after restarting the computer.
+async function saveProducts() {
     if (!currentUserEmail) return;
 
     localStorage.setItem(getProductsStorageKey(), JSON.stringify(products));
+
+    try {
+        await callBackend("/api/products", "PUT", { email: currentUserEmail, products });
+    } catch (error) {
+        console.warn("Products saved in browser only. Server save failed.", error);
+    }
 }
 
 // Store each user's products under a separate key so accounts do not share inventory.

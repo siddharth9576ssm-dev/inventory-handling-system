@@ -134,6 +134,44 @@ const server = http.createServer(async (req, res) => {
             return;
         }
 
+        if (requestUrl.pathname === "/api/products" && req.method === "GET") {
+            const email = (requestUrl.searchParams.get("email") || "").trim().toLowerCase();
+
+            if (!email) {
+                sendJson(res, 400, { error: "User email is required." });
+                return;
+            }
+
+            const user = await findUser(email);
+            if (!user) {
+                sendJson(res, 404, { error: "User not found." });
+                return;
+            }
+
+            sendJson(res, 200, { products: await getProducts(email) });
+            return;
+        }
+
+        if (requestUrl.pathname === "/api/products" && req.method === "PUT") {
+            const body = await readJsonBody(req);
+            const email = (body.email || "").trim().toLowerCase();
+
+            if (!email) {
+                sendJson(res, 400, { error: "User email is required." });
+                return;
+            }
+
+            const user = await findUser(email);
+            if (!user) {
+                sendJson(res, 404, { error: "User not found." });
+                return;
+            }
+
+            const savedProducts = await saveProducts(email, body.products);
+            sendJson(res, 200, { products: savedProducts });
+            return;
+        }
+
         if (requestUrl.pathname !== "/api/price" || req.method !== "GET") {
             sendJson(res, 404, { error: "Not found" });
             return;
@@ -256,8 +294,13 @@ function loadLocalDb() {
     if (!localDbCache || typeof localDbCache !== "object") {
         localDbCache = {
             users: [],
+            products: {},
             history: []
         };
+    }
+
+    if (!localDbCache.products || typeof localDbCache.products !== "object") {
+        localDbCache.products = {};
     }
 
     return localDbCache;
@@ -302,6 +345,31 @@ async function updateUser(email, updates) {
     user.region = updates.region;
     saveLocalDb();
     return user;
+}
+
+async function getProducts(email) {
+    const db = loadLocalDb();
+    const key = email.toLowerCase();
+    return Array.isArray(db.products[key]) ? db.products[key] : [];
+}
+
+async function saveProducts(email, products) {
+    const db = loadLocalDb();
+    const key = email.toLowerCase();
+    db.products[key] = Array.isArray(products) ? products.map(normalizeProduct) : [];
+    saveLocalDb();
+    return db.products[key];
+}
+
+function normalizeProduct(product) {
+    return {
+        name: String(product.name || "").trim(),
+        marketplace: String(product.marketplace || "Other").trim(),
+        qty: Number(product.qty) || 0,
+        price: Number(product.price) || 0,
+        link: String(product.link || "").trim(),
+        currencyRegion: product.currencyRegion || "IN"
+    };
 }
 
 async function saveFetchHistory(entry) {

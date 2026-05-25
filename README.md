@@ -10,7 +10,7 @@ A simple inventory management web app built with HTML, CSS, JavaScript, and a No
 - Dark mode support
 - Profile and contact pages
 - Backend API using Node.js
-- Local JSON database for demo storage
+- Local JSON database for demo users and inventory storage
 
 ## Project Files
 
@@ -18,6 +18,7 @@ A simple inventory management web app built with HTML, CSS, JavaScript, and a No
 - `public/style.css` - App styling
 - `public/app.js` - Frontend logic
 - `server.js` - Node.js backend server
+- `localdb.json` - Local private database created when the app runs
 
 ## How to Run
 
