@@ -4,242 +4,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory System</title>
+    <title>Inventory Handling System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
-    <!-- Login screen shown first when the page loads. -->
-    <div class="page-container" id="loginPage">
-        <button type="button" class="theme-toggle auth-theme-toggle" onclick="toggleDarkMode()"
-            aria-label="Toggle dark mode">☾</button>
-        <p class="eyebrow">Inventory Manager</p>
-        <h2>Login</h2>
-        <p class="form-note">Sign in to manage your stock list.</p>
-        <div class="floating-field">
-            <input id="loginEmail" type="email" placeholder=" ">
-            <label for="loginEmail">Email</label>
-        </div>
-        <div class="floating-field password-field">
-            <input id="loginPass" type="password" placeholder=" ">
-            <label for="loginPass">Password</label>
-            <button type="button" class="toggle-password" onclick="togglePassword('loginPass', this)">Show</button>
-        </div>
-        <button class="primary-button" onclick="loginUser()">Login</button>
-        <p class="switch-text">No account? <a onclick="showSignup()">Sign Up</a></p>
-    </div>
-
-    <!-- Signup screen for creating the demo browser account. -->
-    <div class="page-container" id="signupPage">
-        <button type="button" class="theme-toggle auth-theme-toggle" onclick="toggleDarkMode()"
-            aria-label="Toggle dark mode">☾</button>
-        <p class="eyebrow">Inventory Manager</p>
-        <h2>Create Account</h2>
-        <p class="form-note">Create a demo account for this browser.</p>
-        <div class="floating-field">
-            <input id="signupName" type="text" placeholder=" ">
-            <label for="signupName">Full Name</label>
-        </div>
-        <div class="floating-field">
-            <input id="signupEmail" type="email" placeholder=" ">
-            <label for="signupEmail">Email</label>
-        </div>
-        <div class="floating-field password-field">
-            <input id="signupPass" type="password" placeholder=" ">
-            <label for="signupPass">Password</label>
-            <button type="button" class="toggle-password" onclick="togglePassword('signupPass', this)">Show</button>
-        </div>
-        <button class="primary-button" onclick="signupUser()">Sign Up</button>
-        <p class="switch-text">Already have an account? <a onclick="showLogin()">Login</a></p>
-    </div>
-
-    <!-- Main inventory dashboard shown after a successful login. -->
-    <div class="container" id="inventoryPage">
-        <!-- Shared navigation for dashboard, about, contact, and logout. -->
-        <header class="navbar">
-            <h2>Inventory Manager</h2>
-            <nav>
-                <span class="user-chip">Hi, <strong class="current-user-name">User</strong></span>
-                <a onclick="showDashboard()">Dashboard</a>
-                <a onclick="showProfile()">Profile</a>
-                <a onclick="showAbout()">About</a>
-                <a onclick="showContact()">Contact</a>
-                <button type="button" class="theme-toggle" onclick="toggleDarkMode()"
-                    aria-label="Toggle dark mode">☾</button>
-                <button onclick="logoutUser()">Logout</button>
-            </nav>
-        </header>
-
-        <!-- Dashboard title and total inventory value summary. -->
-        <section class="dashboard-header">
-            <div>
-                <p class="eyebrow">Dashboard</p>
-                <h1>Product Catalog</h1>
-                <p class="welcome-line">Welcome, <span class="current-user-name">User</span></p>
+    <main class="auth-screen" id="authScreen">
+        <section class="auth-panel">
+            <div class="brand-block">
+                <span class="logo-mark">IH</span>
+                <p class="eyebrow">Inventory Handling System</p>
+                <h1>Manage stock with clarity.</h1>
+                <p>Track products, stock levels, and recent activity from one clean dashboard.</p>
             </div>
-            <div class="total-card">
-                <span>Total Value</span>
-                <strong><span id="totalInventoryValue">₹0.00</span></strong>
-            </div>
+
+            <form class="auth-card" id="authForm">
+                <div class="auth-tabs">
+                    <button type="button" class="active" id="loginTab">Login</button>
+                    <button type="button" id="signupTab">Signup</button>
+                </div>
+
+                <div class="form-field signup-only">
+                    <label for="nameInput">Full name</label>
+                    <input id="nameInput" type="text" autocomplete="name">
+                </div>
+
+                <div class="form-field">
+                    <label for="emailInput">Email</label>
+                    <input id="emailInput" type="email" autocomplete="email" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="passwordInput">Password</label>
+                    <input id="passwordInput" type="password" autocomplete="current-password" required minlength="6">
+                </div>
+
+                <button class="primary-button" id="authSubmit" type="submit">Login</button>
+                <p class="form-message" id="authMessage"></p>
+            </form>
         </section>
+    </main>
 
-        <!-- Product form used for both adding new items and editing existing ones. -->
-        <div class="input-panel">
-            <div class="field-group product-field">
-                <label for="productName">Product Name</label>
-                <input type="text" id="productName" placeholder="Example: Wireless Headphones">
-            </div>
-            <div class="field-group">
-                <label for="productMarketplace">Store</label>
-                <select id="productMarketplace">
-                    <option value="Amazon">Amazon</option>
-                    <option value="Flipkart">Flipkart</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="field-group">
-                <label for="productQty">Quantity</label>
-                <input type="number" id="productQty" placeholder="10" min="1" step="1">
-            </div>
-            <div class="field-group">
-                <label for="productPrice">Price</label>
-                <input type="number" id="productPrice" placeholder="4999" min="0.01" step="0.01">
-            </div>
-            <div class="field-group link-field">
-                <label for="productLink">Product Link</label>
-                <input type="url" id="productLink" placeholder="https://www.amazon.in/...">
-            </div>
-            <button type="button" id="fetchPriceButton" class="secondary-button" onclick="fetchPriceFromLink()">Fetch
-                Price</button>
-            <button id="addEditButton" onclick="addProduct()">Add Product</button>
-        </div>
-
-        <!-- Inventory items are inserted into this table by app.js. -->
-        <div class="table-panel">
-            <table>
-                <thead>
-                    <tr>
-                        <th>S.no</th>
-                        <th>Product</th>
-                        <th>Store</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                        <th>Link</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryTable"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Profile page for viewing and updating the signed-in user's display name. -->
-    <div class="content-page" id="profilePage">
-        <header class="navbar">
-            <h2>Profile</h2>
-            <nav>
-                <span class="user-chip">Hi, <strong class="current-user-name">User</strong></span>
-                <a onclick="showDashboard()">Dashboard</a>
-                <a onclick="showProfile()">Profile</a>
-                <a onclick="showAbout()">About</a>
-                <a onclick="showContact()">Contact</a>
-                <button type="button" class="theme-toggle" onclick="toggleDarkMode()"
-                    aria-label="Toggle dark mode">&#9790;</button>
-                <button onclick="logoutUser()">Logout</button>
-            </nav>
-        </header>
-        <div class="page-content profile-content">
-            <h1>My Profile</h1>
-            <div class="profile-summary">
-                <div class="avatar-circle" id="profileInitial">U</div>
+    <main class="app-shell hidden" id="appShell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="logo-mark">IH</span>
                 <div>
-                    <p class="profile-name current-user-name">User</p>
-                    <p class="profile-email" id="profileEmail">user@example.com</p>
+                    <strong>Inventory</strong>
+                    <small>Handling System</small>
                 </div>
             </div>
-            <div class="profile-form">
-                <label for="profileName">Display Name</label>
-                <input type="text" id="profileName" placeholder="Enter your name">
+            <nav class="side-nav">
+                <button class="active" type="button" data-section="dashboardSection">Dashboard</button>
+                <button type="button" data-section="productsSection">Products</button>
+                <button type="button" id="logoutButton">Logout</button>
+            </nav>
+        </aside>
 
-                <label for="profileDob">Date of Birth</label>
-                <input type="date" id="profileDob">
-
-                <label for="profileMobile">Mobile Number</label>
-                <div class="mobile-row">
-                    <input type="tel" id="profileMobile" placeholder="Enter mobile number">
-                    <button type="button" class="verify-button" onclick="verifyMobile()">Verify</button>
+        <section class="workspace">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Welcome back</p>
+                    <h2 id="userName">User</h2>
                 </div>
-                <p class="verify-status" id="mobileVerifyStatus">Mobile not verified</p>
+                <button class="ghost-button" type="button" id="refreshButton">Refresh</button>
+            </header>
 
-                <label for="profileRegion">Region</label>
-                <select id="profileRegion" onchange="updateRegionCurrency()">
-                    <option value="IN">India - INR</option>
-                    <option value="US">United States - USD</option>
-                    <option value="GB">United Kingdom - GBP</option>
-                    <option value="EU">Europe - EUR</option>
-                    <option value="JP">Japan - JPY</option>
-                    <option value="AU">Australia - AUD</option>
-                </select>
-                <p class="currency-note">Currency: <strong id="profileCurrency">INR</strong></p>
+            <section class="content-section" id="dashboardSection">
+                <div class="metric-grid">
+                    <article class="metric-card">
+                        <span>Total Products</span>
+                        <strong id="totalProducts">0</strong>
+                    </article>
+                    <article class="metric-card">
+                        <span>Total Stock</span>
+                        <strong id="totalStock">0</strong>
+                    </article>
+                    <article class="metric-card warning">
+                        <span>Low Stock</span>
+                        <strong id="lowStockCount">0</strong>
+                    </article>
+                    <article class="metric-card">
+                        <span>Total Value</span>
+                        <strong id="totalValue">Rs. 0</strong>
+                    </article>
+                </div>
 
-                <button type="button" onclick="updateProfile()">Save Profile</button>
-            </div>
-        </div>
-    </div>
+                <div class="activity-panel">
+                    <div class="section-heading">
+                        <h3>Recent Activity</h3>
+                    </div>
+                    <ul class="activity-list" id="activityList"></ul>
+                </div>
+            </section>
 
-    <!-- Static about page. -->
-    <div class="content-page" id="aboutPage">
-        <header class="navbar">
-            <h2>About Us</h2>
-            <nav>
-                <span class="user-chip">Hi, <strong class="current-user-name">User</strong></span>
-                <a onclick="showDashboard()">Dashboard</a>
-                <a onclick="showProfile()">Profile</a>
-                <a onclick="showAbout()">About</a>
-                <a onclick="showContact()">Contact</a>
-                <button type="button" class="theme-toggle" onclick="toggleDarkMode()"
-                    aria-label="Toggle dark mode">☾</button>
-                <button onclick="logoutUser()">Logout</button>
-            </nav>
-        </header>
-        <div class="page-content">
-            <h1>About Inventory Manager</h1>
-            <p>This is a simple, client-side inventory management system built purely with HTML, CSS, and JavaScript. It
-                demonstrates basic CRUD (Create, Read, Update, Delete) operations and local storage for user
-                authentication and inventory data persistence.</p>
-            <p>Our goal is to provide a lightweight tool for small-scale tracking of products.</p>
-        </div>
-    </div>
+            <section class="content-section hidden" id="productsSection">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Products</p>
+                        <h3>Inventory List</h3>
+                    </div>
+                </div>
 
-    <!-- Static contact page. -->
-    <div class="content-page" id="contactPage">
-        <header class="navbar">
-            <h2>Contact</h2>
-            <nav>
-                <span class="user-chip">Hi, <strong class="current-user-name">User</strong></span>
-                <a onclick="showDashboard()">Dashboard</a>
-                <a onclick="showProfile()">Profile</a>
-                <a onclick="showAbout()">About</a>
-                <a onclick="showContact()">Contact</a>
-                <button type="button" class="theme-toggle" onclick="toggleDarkMode()"
-                    aria-label="Toggle dark mode">☾</button>
-                <button onclick="logoutUser()">Logout</button>
-            </nav>
-        </header>
-        <div class="page-content">
-            <h1>Get in Touch</h1>
-            <p>If you have any questions or feedback, please contact us!</p>
-            <ul>
-                <li><strong>Email:</strong> support@inventoryapp.com</li>
-                <li><strong>Phone:</strong> (555) 123-4567</li>
-                <li><strong>Address:</strong> 123 Main St, Tech City, IT 90210</li>
-            </ul>
-        </div>
-    </div>
+                <form class="product-form" id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="form-field">
+                        <label for="productName">Product name</label>
+                        <input id="productName" type="text" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="productCategory">Category</label>
+                        <input id="productCategory" type="text" value="General" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="productSku">SKU</label>
+                        <input id="productSku" type="text">
+                    </div>
+                    <div class="form-field">
+                        <label for="productQuantity">Quantity</label>
+                        <input id="productQuantity" type="number" min="0" value="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="productPrice">Price</label>
+                        <input id="productPrice" type="number" min="0" step="0.01" value="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="productSupplier">Supplier</label>
+                        <input id="productSupplier" type="text">
+                    </div>
+                    <div class="form-field">
+                        <label for="lowStockLimit">Low stock limit</label>
+                        <input id="lowStockLimit" type="number" min="0" value="5" required>
+                    </div>
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit" id="saveProductButton">Add Product</button>
+                        <button class="ghost-button" type="button" id="resetProductButton">Clear</button>
+                    </div>
+                </form>
 
-    <!-- Main JavaScript for login, page switching, and inventory actions. -->
+                <div class="table-tools">
+                    <input id="searchInput" type="search" placeholder="Search by name, SKU, or supplier">
+                    <select id="categoryFilter">
+                        <option value="">All categories</option>
+                    </select>
+                    <select id="statusFilter">
+                        <option value="">All status</option>
+                        <option value="In Stock">In Stock</option>
+                        <option value="Low Stock">Low Stock</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                    </select>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>SKU</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTable"></tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </main>
+
     <script src="app.js"></script>
 </body>
 
