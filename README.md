@@ -8,7 +8,6 @@ A modern inventory management system built with HTML, CSS, JavaScript, Node.js, 
 - Google signup and login
 - JWT protected API routes
 - Password hashing with bcrypt
-- 4-digit email verification before login
 - Add, edit, delete, search, and filter products
 - Dashboard cards for total products, total stock, low stock, and total value
 - Recent product activity
@@ -70,12 +69,6 @@ JWT_SECRET=your_long_random_secret
 PORT=3000
 JWT_EXPIRES_IN=7d
 APP_URL=http://localhost:3000
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_gmail_app_password
-EMAIL_FROM=Inventory Handling System <your_email@gmail.com>
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
@@ -109,8 +102,6 @@ POST   /api/auth/signup
 POST   /api/auth/login
 GET    /api/auth/google
 GET    /api/auth/google/callback
-POST   /api/auth/verify-email
-POST   /api/auth/resend-verification
 GET    /api/auth/me
 GET    /api/products/dashboard
 GET    /api/products
@@ -151,12 +142,6 @@ MONGO_URI
 JWT_SECRET
 JWT_EXPIRES_IN
 APP_URL
-SMTP_HOST
-SMTP_PORT
-SMTP_SECURE
-SMTP_USER
-SMTP_PASS
-EMAIL_FROM
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 GOOGLE_CALLBACK_URL

@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const Product = require("../models/Product");
 const generateToken = require("../utils/generateToken");
-const sendEmail = require("../utils/sendEmail");
 
 async function signup(req, res, next) {
     try {
@@ -23,19 +22,20 @@ async function signup(req, res, next) {
             throw new Error("This email is already registered");
         }
 
-        const verificationCode = createVerificationCode();
         const user = await User.create({
             name,
             email,
             password,
-            emailVerificationCode: verificationCode,
-            emailVerificationExpires: Date.now() + 1000 * 60 * 10
+            isEmailVerified: true
         });
 
-        await sendVerificationEmail(user, verificationCode);
-
         res.status(201).json({
-            message: "Account created. Enter the 4-digit code sent to your email."
+            token: generateToken(user._id),
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email
+            }
         });
     } catch (error) {
         next(error);
@@ -65,11 +65,6 @@ async function login(req, res, next) {
             throw new Error("Invalid email or password");
         }
 
-        if (!user.isEmailVerified) {
-            res.status(403);
-            throw new Error("Please verify your email with the 4-digit code before login");
-        }
-
         res.json({
             token: generateToken(user._id),
             user: {
@@ -92,70 +87,6 @@ async function getMe(req, res) {
                 isEmailVerified: req.user.isEmailVerified
             }
     });
-}
-
-async function verifyEmailCode(req, res, next) {
-    try {
-        const email = String(req.body.email || "").trim().toLowerCase();
-        const code = String(req.body.code || "").trim();
-
-        if (!email || !/^\d{4}$/.test(code)) {
-            res.status(400);
-            throw new Error("Email and 4-digit code are required");
-        }
-
-        const user = await User.findOne({
-            email,
-            emailVerificationCode: code,
-            emailVerificationExpires: { $gt: Date.now() }
-        });
-
-        if (!user) {
-            res.status(400);
-            throw new Error("Verification code is invalid or expired");
-        }
-
-        user.isEmailVerified = true;
-        user.emailVerificationCode = "";
-        user.emailVerificationExpires = null;
-        await user.save();
-
-        res.json({ message: "Email verified. You can now login." });
-    } catch (error) {
-        next(error);
-    }
-}
-
-async function resendVerification(req, res, next) {
-    try {
-        const email = String(req.body.email || "").trim().toLowerCase();
-
-        if (!email) {
-            res.status(400);
-            throw new Error("Email is required");
-        }
-
-        const user = await User.findOne({ email });
-        if (!user) {
-            res.status(404);
-            throw new Error("User not found");
-        }
-
-        if (user.isEmailVerified) {
-            res.json({ message: "Email is already verified" });
-            return;
-        }
-
-        const verificationCode = createVerificationCode();
-        user.emailVerificationCode = verificationCode;
-        user.emailVerificationExpires = Date.now() + 1000 * 60 * 10;
-        await user.save();
-
-        await sendVerificationEmail(user, verificationCode);
-        res.json({ message: "A new 4-digit verification code was sent." });
-    } catch (error) {
-        next(error);
-    }
 }
 
 async function deleteAccount(req, res, next) {
@@ -184,22 +115,4 @@ function googleCallback(req, res) {
     res.redirect(redirectUrl.toString());
 }
 
-async function sendVerificationEmail(user, code) {
-    await sendEmail({
-        to: user.email,
-        subject: "Your Inventory Handling System verification code",
-        html: `
-            <h2>Verify your email</h2>
-            <p>Hello ${user.name},</p>
-            <p>Your 4-digit verification code is:</p>
-            <p style="font-size:32px;font-weight:800;letter-spacing:6px;">${code}</p>
-            <p>This code expires in 10 minutes.</p>
-        `
-    });
-}
-
-function createVerificationCode() {
-    return String(Math.floor(1000 + Math.random() * 9000));
-}
-
-module.exports = { signup, login, getMe, verifyEmailCode, resendVerification, deleteAccount, googleCallback };
+module.exports = { signup, login, getMe, deleteAccount, googleCallback };
