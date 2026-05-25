@@ -1,6 +1,7 @@
 const API_URL = window.location.origin;
 const TOKEN_KEY = "inventoryToken";
 const USER_KEY = "inventoryUser";
+const THEME_KEY = "inventoryTheme";
 
 const authScreen = document.getElementById("authScreen");
 const appShell = document.getElementById("appShell");
@@ -17,11 +18,13 @@ const productTable = document.getElementById("productTable");
 const searchInput = document.getElementById("searchInput");
 const categoryFilter = document.getElementById("categoryFilter");
 const statusFilter = document.getElementById("statusFilter");
+const themeToggle = document.getElementById("themeToggle");
 
 let authMode = "login";
 let products = [];
 
 document.addEventListener("DOMContentLoaded", initApp);
+themeToggle.addEventListener("click", toggleTheme);
 authForm.addEventListener("submit", handleAuthSubmit);
 loginTab.addEventListener("click", () => setAuthMode("login"));
 signupTab.addEventListener("click", () => setAuthMode("signup"));
@@ -37,6 +40,8 @@ categoryFilter.addEventListener("change", loadProducts);
 statusFilter.addEventListener("change", loadProducts);
 
 function initApp() {
+    applySavedTheme();
+
     const token = getToken();
     const user = getStoredUser();
 
@@ -48,6 +53,18 @@ function initApp() {
 
     setAuthMode("login");
     showAuth();
+}
+
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem(THEME_KEY) || "light";
+    document.body.classList.toggle("dark-mode", savedTheme === "dark");
+    themeToggle.textContent = savedTheme === "dark" ? "Light" : "Dark";
+}
+
+function toggleTheme() {
+    const isDarkMode = document.body.classList.toggle("dark-mode");
+    localStorage.setItem(THEME_KEY, isDarkMode ? "dark" : "light");
+    themeToggle.textContent = isDarkMode ? "Light" : "Dark";
 }
 
 function setAuthMode(mode) {
