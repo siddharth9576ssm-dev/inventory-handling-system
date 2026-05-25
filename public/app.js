@@ -80,6 +80,13 @@ async function handleAuthSubmit(event) {
 
     try {
         const data = await request(endpoint, { method: "POST", body });
+        if (authMode === "signup") {
+            authForm.reset();
+            setAuthMode("login");
+            showMessage(data.message || "Account created. Please check your email to verify your account.");
+            return;
+        }
+
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));
         showApp(data.user);

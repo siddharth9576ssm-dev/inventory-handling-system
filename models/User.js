@@ -19,6 +19,18 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "Password is required"],
             minlength: 6
+        },
+        isEmailVerified: {
+            type: Boolean,
+            default: false
+        },
+        emailVerificationToken: {
+            type: String,
+            default: ""
+        },
+        emailVerificationExpires: {
+            type: Date,
+            default: null
         }
     },
     { timestamps: true }

@@ -7,6 +7,7 @@ A modern inventory management system built with HTML, CSS, JavaScript, Node.js, 
 - Signup, login, logout
 - JWT protected API routes
 - Password hashing with bcrypt
+- Email verification before login
 - Add, edit, delete, search, and filter products
 - Dashboard cards for total products, total stock, low stock, and total value
 - Recent product activity
@@ -67,6 +68,13 @@ MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/inventory-handling
 JWT_SECRET=your_long_random_secret
 PORT=3000
 JWT_EXPIRES_IN=7d
+APP_URL=http://localhost:3000
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
+EMAIL_FROM=Inventory Handling System <your_email@gmail.com>
 ```
 
 5. Start the server:
@@ -95,6 +103,8 @@ http://localhost:3000
 ```text
 POST   /api/auth/signup
 POST   /api/auth/login
+GET    /api/auth/verify-email/:token
+POST   /api/auth/resend-verification
 GET    /api/auth/me
 GET    /api/products/dashboard
 GET    /api/products
@@ -134,6 +144,13 @@ npm start
 MONGO_URI
 JWT_SECRET
 JWT_EXPIRES_IN
+APP_URL
+SMTP_HOST
+SMTP_PORT
+SMTP_SECURE
+SMTP_USER
+SMTP_PASS
+EMAIL_FROM
 ```
 
 ### Vercel
