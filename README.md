@@ -14,9 +14,9 @@ A simple inventory management web app built with HTML, CSS, JavaScript, and a No
 
 ## Project Files
 
-- `index.html` - Main web page
-- `style.css` - App styling
-- `app.js` - Frontend logic
+- `public/index.html` - Main web page
+- `public/style.css` - App styling
+- `public/app.js` - Frontend logic
 - `server.js` - Node.js backend server
 
 ## How to Run

@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const PORT = process.env.PORT || 3000;
-const rootDir = __dirname;
+const publicDir = path.join(__dirname, "public");
 const localDbPath = path.join(__dirname, "localdb.json");
 
 const requestHeaders = {
@@ -168,15 +168,15 @@ server.listen(PORT, () => {
 
 function serveStaticFile(pathname, res) {
     const safePath = pathname.replace(/^\/+/g, "");
-    const filePath = path.normalize(path.join(rootDir, safePath));
+    const filePath = path.normalize(path.join(publicDir, safePath));
 
-    if (!filePath.startsWith(rootDir + path.sep) && filePath !== rootDir) {
+    if (!filePath.startsWith(publicDir + path.sep) && filePath !== publicDir) {
         sendJson(res, 403, { error: "Forbidden" });
         return;
     }
 
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-        const indexPath = path.join(rootDir, "index.html");
+        const indexPath = path.join(publicDir, "index.html");
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(fs.readFileSync(indexPath));
         return;
