@@ -27,6 +27,7 @@ signupTab.addEventListener("click", () => setAuthMode("signup"));
 productForm.addEventListener("submit", saveProduct);
 document.getElementById("resetProductButton").addEventListener("click", resetProductForm);
 document.getElementById("logoutButton").addEventListener("click", logout);
+document.getElementById("deleteAccountButton").addEventListener("click", deleteAccount);
 document.getElementById("refreshButton").addEventListener("click", loadAppData);
 searchInput.addEventListener("input", loadProducts);
 categoryFilter.addEventListener("change", loadProducts);
@@ -287,6 +288,19 @@ function logout() {
     localStorage.removeItem(USER_KEY);
     products = [];
     showAuth();
+}
+
+async function deleteAccount() {
+    const confirmed = confirm("Delete your account permanently? This will remove your products and cannot be undone.");
+    if (!confirmed) return;
+
+    try {
+        await request("/api/auth/me", { method: "DELETE" });
+        alert("Your account and inventory data were deleted.");
+        logout();
+    } catch (error) {
+        alert(error.message);
+    }
 }
 
 function getToken() {

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Product = require("../models/Product");
 const generateToken = require("../utils/generateToken");
 
 async function signup(req, res, next) {
@@ -76,4 +77,15 @@ async function getMe(req, res) {
     });
 }
 
-module.exports = { signup, login, getMe };
+async function deleteAccount(req, res, next) {
+    try {
+        await Product.deleteMany({ user: req.user._id });
+        await User.findByIdAndDelete(req.user._id);
+
+        res.json({ message: "Account and product data deleted permanently" });
+    } catch (error) {
+        next(error);
+    }
+}
+
+module.exports = { signup, login, getMe, deleteAccount };

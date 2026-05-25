@@ -227,6 +227,11 @@ select:focus {
     text-align: left;
 }
 
+.side-nav .danger-nav {
+    border-color: rgba(255, 120, 120, 0.4);
+    color: #ffd7d7;
+}
+
 .workspace {
     padding: 24px;
     overflow-x: hidden;
